@@ -12,18 +12,17 @@ import 'connectivity_service.interface.dart';
 
 /// Discover network connectivity configurations: Distinguish between WI-FI
 /// and cellular, check WI-FI status and more.
-class ConnectivityService extends ConnectivityServiceInterface
-    with ConnectivityMixin {
+class ConnectivityService extends ConnectivityServiceInterface with ConnectivityMixin {
   /// Constructs a singleton instance of [ConnectivityService].
   ConnectivityService() : super() {
-    void update(ConnectivityResult result) async {
+    void update(List<ConnectivityResult> results) async {
+      final result = results.first;
       final status = ConnectivityStatus.values[result.index];
       if (connectivityChanged.valueOrNull != status) {
         connectivityChanged.add(status);
       }
 
-      final isConnected =
-          status != ConnectivityStatus.none && await hasConnection();
+      final isConnected = status != ConnectivityStatus.none && await hasConnection();
       if (connected.valueOrNull != isConnected) {
         connected.add(isConnected);
       }
@@ -61,8 +60,7 @@ class ConnectivityService extends ConnectivityServiceInterface
   ///
   /// Please note that it will not let you know about state of the `REAL` network connection.
   @override
-  ValueStream<ConnectivityStatus> get onConnectivityChanged =>
-      connectivityChanged;
+  ValueStream<ConnectivityStatus> get onConnectivityChanged => connectivityChanged;
 
   /// Checks the connection status of the device.
   ///
@@ -71,8 +69,8 @@ class ConnectivityService extends ConnectivityServiceInterface
   ///
   /// Instead listen for connectivity changes via [onConnectivityChanged] stream.
   @override
-  Future<ConnectivityStatus> checkConnectivity() async => ConnectivityStatus
-      .values[(await _connectivity.checkConnectivity()).index];
+  Future<ConnectivityStatus> checkConnectivity() async =>
+      ConnectivityStatus.values[(await _connectivity.checkConnectivity()).first.index];
 
   @override
   void dispose() {
